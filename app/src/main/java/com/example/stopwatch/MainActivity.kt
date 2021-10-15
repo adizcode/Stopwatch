@@ -13,8 +13,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.stopwatch.databinding.ActivityMainBinding
 import com.google.android.material.snackbar.Snackbar
 
-// TODO: [BUG] CountDownTimer runs for an extra second
-
 class MainActivity : AppCompatActivity() {
 
     private inner class MyOnClickListener : View.OnClickListener {
@@ -33,11 +31,11 @@ class MainActivity : AppCompatActivity() {
                     // Start the timer
                     val minutes = editText.text.toString().toInt()
 
-                    // Handle negative values
-                    if (minutes < 0) {
+                    // Handle non-positive values
+                    if (minutes <= 0) {
                         Snackbar.make(
                             binding.root,
-                            "Only non-negative numbers are allowed",
+                            "Only positive numbers are allowed",
                             Snackbar.LENGTH_SHORT
                         )
                             .show()
@@ -56,7 +54,10 @@ class MainActivity : AppCompatActivity() {
                     // Reset the timer
                     editText.isEnabled = true
                     countDownTimer.cancel()
-                    updateStopWatchUi(binding.circularIndicator.max)
+                    // updateStopWatchUi(binding.circularIndicator.max)
+                    val max = binding.circularIndicator.max
+                    binding.circularIndicator.progress = max
+                    binding.editTextTime.setText("$max")
                     isReset = true
                     (v as Button).text = getString(R.string.start)
                 }
@@ -73,7 +74,10 @@ class MainActivity : AppCompatActivity() {
             CountDownTimer((minuteCount * 60 * 1000).toLong(), (60 * 1000).toLong()) {
 
             override fun onTick(millisUntilFinished: Long) {
-                updateStopWatchUi(millisUntilFinished.toInt() / (60 * 1000))
+                // updateStopWatchUi(millisUntilFinished.toInt() / (60 * 1000))
+                val progress = (millisUntilFinished.toInt() / (60 * 1000)) + 1
+                binding.circularIndicator.progress = progress
+                binding.editTextTime.setText("$progress")
             }
 
             override fun onFinish() {
@@ -85,10 +89,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateStopWatchUi(progress: Int) {
-        binding.circularIndicator.progress = progress
-        binding.editTextTime.setText("$progress")
-    }
+//    private fun updateStopWatchUi(progress: Int) {
+//        binding.circularIndicator.progress = progress
+//        binding.editTextTime.setText("$progress")
+//    }
 
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
