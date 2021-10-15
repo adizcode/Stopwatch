@@ -7,7 +7,6 @@ import android.os.CountDownTimer
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import com.example.stopwatch.databinding.ActivityMainBinding
@@ -21,46 +20,34 @@ class MainActivity : AppCompatActivity() {
             val editText = binding.editTextTime
 
             when {
-                editText.text.isBlank() -> {
-                    // Missing minute count
-                    Snackbar.make(binding.root, "Enter the minute count", Snackbar.LENGTH_SHORT)
-                        .show()
-                }
 
+                // Missing minute count
+                editText.text.isBlank() ->
+
+                    Snackbar.make(
+                        binding.root,
+                        "Enter the minute count",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
+
+                // Start the timer
                 isReset -> {
-                    // Start the timer
                     val minutes = editText.text.toString().toInt()
 
+                    if (minutes > 0)
+                        startStopwatch(minutes)
+
                     // Handle non-positive values
-                    if (minutes <= 0) {
+                    else
                         Snackbar.make(
                             binding.root,
                             "Only positive numbers are allowed",
                             Snackbar.LENGTH_SHORT
-                        )
-                            .show()
-                        return
-                    }
-
-                    editText.isEnabled = false
-                    countDownTimer = newStopWatchTimer(minutes)
-                    binding.circularIndicator.max = minutes
-                    countDownTimer.start()
-                    isReset = false
-                    (v as Button).text = getString(R.string.reset)
+                        ).show()
                 }
 
-                else -> {
-                    // Reset the timer
-                    editText.isEnabled = true
-                    countDownTimer.cancel()
-                    // updateStopWatchUi(binding.circularIndicator.max)
-                    val max = binding.circularIndicator.max
-                    binding.circularIndicator.progress = max
-                    binding.editTextTime.setText("$max")
-                    isReset = true
-                    (v as Button).text = getString(R.string.start)
-                }
+                // Reset the timer
+                else -> resetStopwatch()
             }
         }
     }
@@ -74,25 +61,16 @@ class MainActivity : AppCompatActivity() {
             CountDownTimer((minuteCount * 60 * 1000).toLong(), (60 * 1000).toLong()) {
 
             override fun onTick(millisUntilFinished: Long) {
-                // updateStopWatchUi(millisUntilFinished.toInt() / (60 * 1000))
                 val progress = (millisUntilFinished.toInt() / (60 * 1000)) + 1
-                binding.circularIndicator.progress = progress
-                binding.editTextTime.setText("$progress")
+                updateStopwatchUi(progress)
             }
 
             override fun onFinish() {
                 Snackbar.make(binding.root, R.string.time_up, Snackbar.LENGTH_SHORT).show()
-                binding.editTextTime.isEnabled = true
-                binding.editTextTime.setText("")
-                binding.btnStartResetTimer.text = getString(R.string.start)
+                resetStopwatch()
             }
         }
     }
-
-//    private fun updateStopWatchUi(progress: Int) {
-//        binding.circularIndicator.progress = progress
-//        binding.editTextTime.setText("$progress")
-//    }
 
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,8 +84,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // Initial state of the stopwatch UI
-        val max = binding.circularIndicator.max
-        binding.circularIndicator.progress = max
+        binding.circularIndicator.progress = binding.circularIndicator.max
 
         // Respond to button taps
         binding.btnStartResetTimer.setOnClickListener(MyOnClickListener())
@@ -126,5 +103,29 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return super.dispatchTouchEvent(ev)
+    }
+
+    fun resetStopwatch() {
+        countDownTimer.cancel()
+        binding.circularIndicator.progress = binding.circularIndicator.max
+        binding.editTextTime.setText("")
+        binding.editTextTime.isEnabled = true
+        binding.btnStartResetTimer.text = getString(R.string.start)
+        isReset = true
+    }
+
+    fun startStopwatch(minutes: Int) {
+        binding.circularIndicator.max = minutes
+        binding.circularIndicator.progress = minutes
+        binding.editTextTime.isEnabled = false
+        binding.btnStartResetTimer.text = getString(R.string.reset)
+        isReset = true
+        countDownTimer = newStopWatchTimer(minutes)
+        countDownTimer.start()
+    }
+
+    fun updateStopwatchUi(progress : Int) {
+        binding.circularIndicator.progress = progress
+        binding.editTextTime.setText("$progress")
     }
 }
