@@ -119,7 +119,7 @@ class MainActivity : AppCompatActivity() {
         binding.circularIndicator.progress = minutes
         binding.editTextTime.isEnabled = false
         binding.btnStartResetTimer.text = getString(R.string.reset)
-        isReset = true
+        isReset = false
         countDownTimer = newStopWatchTimer(minutes)
         countDownTimer.start()
     }
