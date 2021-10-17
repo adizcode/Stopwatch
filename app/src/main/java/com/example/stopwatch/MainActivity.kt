@@ -2,6 +2,7 @@ package com.example.stopwatch
 
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.MotionEvent
@@ -47,7 +48,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 // Reset the timer
-                else -> resetStopwatch()
+                else -> resetStopwatch(hasFinished = false)
             }
         }
     }
@@ -66,8 +67,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onFinish() {
-                Snackbar.make(binding.root, R.string.time_up, Snackbar.LENGTH_SHORT).show()
-                resetStopwatch()
+                Snackbar.make(binding.root, R.string.time_up, Snackbar.LENGTH_LONG).show()
+                resetStopwatch(hasFinished = true)
             }
         }
     }
@@ -105,7 +106,15 @@ class MainActivity : AppCompatActivity() {
         return super.dispatchTouchEvent(ev)
     }
 
-    fun resetStopwatch() {
+    fun resetStopwatch(hasFinished: Boolean) {
+
+        val sound = if (hasFinished) R.raw.alarm else R.raw.reset
+
+        MediaPlayer.create(this, sound).apply {
+            setOnCompletionListener { it.release() }
+            start()
+        }
+
         countDownTimer.cancel()
         binding.circularIndicator.progress = binding.circularIndicator.max
         binding.editTextTime.setText("")
@@ -115,16 +124,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun startStopwatch(minutes: Int) {
+        MediaPlayer.create(this, R.raw.start).apply {
+            setOnCompletionListener { it.release() }
+            start()
+        }
+
         binding.circularIndicator.max = minutes
         binding.circularIndicator.progress = minutes
         binding.editTextTime.isEnabled = false
         binding.btnStartResetTimer.text = getString(R.string.reset)
-        isReset = true
+        isReset = false
         countDownTimer = newStopWatchTimer(minutes)
         countDownTimer.start()
     }
 
-    fun updateStopwatchUi(progress : Int) {
+    fun updateStopwatchUi(progress: Int) {
         binding.circularIndicator.progress = progress
         binding.editTextTime.setText("$progress")
     }
