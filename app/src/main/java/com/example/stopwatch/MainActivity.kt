@@ -88,6 +88,13 @@ class MainActivity : AppCompatActivity() {
         return super.dispatchTouchEvent(ev)
     }
 
+    override fun onStop() {
+        super.onStop()
+
+        // Reset stopwatch everytime the app goes off-screen
+        resetStopwatch(hasFinished = false)
+    }
+
     private fun createStopwatchTimer(minuteCount: Int): CountDownTimer {
         return object :
             CountDownTimer((minuteCount * 60 * 1000).toLong(), (60 * 1000).toLong()) {
